@@ -1,0 +1,6 @@
+# Dependências do projeto
+# Instalar com: pip install -r requirements.txt
+
+easyocr       # OCR para leitura de matrículas
+Pillow        # Manipulação de imagens (dependência do easyocr)
+requests      # HTTP (alternativa ao urllib já incluído no Python)
