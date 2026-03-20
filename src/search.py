@@ -33,6 +33,22 @@ import itertools
 _counter = itertools.count()
 
 
+def path_cost(graph: dict, path: list[str]) -> float:
+    """Calcula o custo total de um caminho válido no grafo."""
+    if not path:
+        return float('inf')
+    if len(path) == 1:
+        return 0
+
+    total = 0
+    for current, nxt in zip(path, path[1:]):
+        neighbors = graph.get(current, {})
+        if nxt not in neighbors:
+            return float('inf')
+        total += neighbors[nxt]
+    return total
+
+
 # ---------------------------------------------------------------------------
 # 1. Custo Uniforme
 # ---------------------------------------------------------------------------
@@ -66,6 +82,7 @@ def uniform_cost_search(graph: dict, start: str, goal: str):
     # está em explored, é descartado (pode ter entrado várias vezes com
     # custos diferentes antes de ser pela primeira vez expandido).
     explored = set()
+    best_cost = {start: 0}
 
     # Registo de cada nó expandido, guardando o estado nesse momento.
     # Será apresentado ao utilizador para mostrar o funcionamento do algoritmo.
@@ -96,10 +113,14 @@ def uniform_cost_search(graph: dict, start: str, goal: str):
 
         # Expandir todos os vizinhos ainda não visitados
         for neighbor, edge_cost in sorted(graph.get(node, {}).items()):
-            if neighbor not in explored:
-                # Inserir vizinho na fila com o novo custo acumulado
+            if neighbor in explored:
+                continue
+            new_cost = cost + edge_cost
+            # Só manter na fronteira quando for uma melhoria para o vizinho.
+            if new_cost < best_cost.get(neighbor, float('inf')):
+                best_cost[neighbor] = new_cost
                 heapq.heappush(frontier, (
-                    cost + edge_cost,
+                    new_cost,
                     next(_counter),
                     path + [neighbor],
                 ))
@@ -270,6 +291,7 @@ def a_star_search(graph: dict, start: str, goal: str, heuristic):
     # Tuplo: (f, id_unico, g_acumulado, caminho)
     frontier = [(h0, next(_counter), 0, [start])]
     explored = set()
+    best_g = {start: 0}
     iterations = []
 
     while frontier:
@@ -297,16 +319,22 @@ def a_star_search(graph: dict, start: str, goal: str, heuristic):
         explored.add(node)
 
         for neighbor, edge_cost in sorted(graph.get(node, {}).items()):
-            if neighbor not in explored:
-                new_g = g_cost + edge_cost
-                new_h = heuristic(neighbor)
-                # f do vizinho: custo real até ele + estimativa dali ao destino
-                heapq.heappush(frontier, (
-                    new_g + new_h,
-                    next(_counter),
-                    new_g,
-                    path + [neighbor],
-                ))
+            if neighbor in explored:
+                continue
+
+            new_g = g_cost + edge_cost
+            if new_g >= best_g.get(neighbor, float('inf')):
+                continue
+
+            best_g[neighbor] = new_g
+            new_h = heuristic(neighbor)
+            # f do vizinho: custo real até ele + estimativa dali ao destino
+            heapq.heappush(frontier, (
+                new_g + new_h,
+                next(_counter),
+                new_g,
+                path + [neighbor],
+            ))
 
     # Heap vazio: não existe caminho entre start e goal
     return None, float('inf'), iterations
