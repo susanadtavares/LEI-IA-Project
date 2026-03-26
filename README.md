@@ -7,6 +7,7 @@ Patricia Oliveira
 
 Susana Tavares
 
+<<<<<<< HEAD
 ## Website Implementation (FastAPI + React)
 
 This project now includes a web version with:
@@ -68,3 +69,27 @@ Frontend will run at `http://localhost:5173` and call the backend at `http://loc
 - `POST /attractions`
 
 Swagger docs available at `http://localhost:8000/docs`.
+=======
+
+## How to run
+
+1. Install dependencies:
+
+	pip install -r requirements.txt
+
+2. Start the app:
+
+	python src/main.py
+
+3. Optional validation (recommended before delivery):
+
+	python src/self_check.py
+
+
+## What the validation checks
+
+- Graph consistency (bidirectional edges and positive distances)
+- Heuristic quality for Faro (admissibility and consistency)
+- Cost optimality comparison between UCS and A*
+- Path integrity (path cost matches reported algorithm cost)
+>>>>>>> 082d84687450d948b8000e048e122509aa98880b
