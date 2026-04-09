@@ -14,6 +14,8 @@
 # inserida nos dois sentidos no dicionário GRAPH.
 # =============================================================================
 
+import math
+
 # -----------------------------------------------------------------------------
 # Grafo de adjacências
 # -----------------------------------------------------------------------------
@@ -75,20 +77,68 @@ HEURISTIC_FARO = {
     'Viseu':            363,
 }
 
+# -----------------------------------------------------------------------------
+# Coordenadas aproximadas (latitude, longitude) das cidades
+# -----------------------------------------------------------------------------
+# Usadas para estimar a distancia em linha reta entre qualquer par de cidades.
+# Para o objetivo Faro continuamos a usar a tabela oficial do enunciado.
+CITY_COORDS = {
+    'Aveiro': (40.6405, -8.6538),
+    'Braga': (41.5454, -8.4265),
+    'Bragança': (41.8060, -6.7567),
+    'Beja': (38.0151, -7.8632),
+    'Castelo Branco': (39.8222, -7.4909),
+    'Coimbra': (40.2033, -8.4103),
+    'Évora': (38.5710, -7.9135),
+    'Faro': (37.0194, -7.9304),
+    'Guarda': (40.5373, -7.2677),
+    'Leiria': (39.7444, -8.8072),
+    'Lisboa': (38.7223, -9.1393),
+    'Portalegre': (39.2967, -7.4280),
+    'Porto': (41.1579, -8.6291),
+    'Santarém': (39.2362, -8.6869),
+    'Setúbal': (38.5244, -8.8882),
+    'Viana do Castelo': (41.6918, -8.8345),
+    'Vila Real': (41.3006, -7.7441),
+    'Viseu': (40.6610, -7.9097),
+}
+
 # Lista de todas as cidades disponíveis no grafo, ordenada alfabeticamente.
 # Usada nos menus de seleção de origem/destino.
 CITIES = sorted(GRAPH.keys())
+
+
+def _haversine_km(city_a: str, city_b: str) -> float:
+    """
+    Distancia geodesica aproximada entre duas cidades (km) usando Haversine.
+    """
+    coords_a = CITY_COORDS.get(city_a)
+    coords_b = CITY_COORDS.get(city_b)
+    if not coords_a or not coords_b:
+        return 0.0
+
+    lat1, lon1 = coords_a
+    lat2, lon2 = coords_b
+
+    radius_km = 6371.0
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return radius_km * c
 
 
 def get_heuristic(goal: str):
     """
     Devolve a função heurística adequada para o destino escolhido.
 
-    O enunciado fornece apenas a tabela de distâncias em linha reta para Faro.
-    Quando o destino é Faro, usamos essa tabela — heurística admissível.
-    Para qualquer outro destino, h(n) = 0, o que faz:
-      - A*       degradar para Custo Uniforme (ainda óptimo, mas mais lento)
-      - Sôfrega  degradar para BFS/DFS sem direção (sem garantia de óptimo)
+        Quando o destino é Faro, usa a tabela oficial do enunciado.
+        Para outros destinos, usa a distancia geodesica em linha reta aproximada
+        com base em coordenadas (Haversine), tornando A* e Sôfrega informados em
+        todo o espaço de estados.
 
     Parâmetros:
         goal : nome da cidade destino
@@ -103,6 +153,4 @@ def get_heuristic(goal: str):
         # causam KeyError e são tratadas como inatingíveis.
         return lambda node: HEURISTIC_FARO.get(node, float('inf'))
     else:
-        # Sem heurística definida para outros destinos: h = 0 para todos os nós.
-        # Com h=0, f(n) = g(n) + 0 = g(n), portanto A* comporta-se como UCS.
-        return lambda node: 0
+        return lambda node: _haversine_km(node, goal)

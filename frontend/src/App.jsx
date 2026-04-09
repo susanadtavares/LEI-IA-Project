@@ -10,6 +10,33 @@ import {
 } from './api'
 import './App.css'
 
+const ITERATION_COLUMN_MAP = {
+  ucs: [
+    { key: 'node', label: 'No' },
+    { key: 'g', label: 'g(n)' },
+    { key: 'path', label: 'Caminho' },
+  ],
+  dls: [
+    { key: 'node', label: 'No' },
+    { key: 'depth', label: 'Prof' },
+    { key: 'g', label: 'g(n)' },
+    { key: 'path', label: 'Caminho' },
+  ],
+  greedy: [
+    { key: 'node', label: 'No' },
+    { key: 'h', label: 'h(n)' },
+    { key: 'g', label: 'g(n)' },
+    { key: 'path', label: 'Caminho' },
+  ],
+  astar: [
+    { key: 'node', label: 'No' },
+    { key: 'f', label: 'f(n)' },
+    { key: 'g', label: 'g(n)' },
+    { key: 'h', label: 'h(n)' },
+    { key: 'path', label: 'Caminho' },
+  ],
+}
+
 function App() {
   const [cities, setCities] = useState([])
   const [models, setModels] = useState([])
@@ -164,6 +191,76 @@ function App() {
     return map[value] ?? value
   }
 
+  function getIterationColumns(algorithm) {
+    return ITERATION_COLUMN_MAP[algorithm] ?? ITERATION_COLUMN_MAP.ucs
+  }
+
+  function getIterationValue(iteration, key) {
+    if (key === 'path') {
+      return Array.isArray(iteration.path) ? iteration.path.join(' -> ') : '-'
+    }
+    return iteration[key] ?? '-'
+  }
+
+  function serializeCompareToCsv(results) {
+    const header = [
+      'algorithm',
+      'distance_km',
+      'iterations',
+      'execution_ms',
+      'expanded_nodes',
+      'path_nodes',
+      'found',
+      'path',
+    ]
+
+    const rows = results.map((result) => [
+      result.algorithm,
+      result.cost,
+      result.iterations?.length ?? 0,
+      result.metrics?.execution_ms ?? '',
+      result.metrics?.expanded_nodes ?? '',
+      result.metrics?.path_nodes ?? '',
+      result.metrics?.found ?? false,
+      (result.path ?? []).join(' -> '),
+    ])
+
+    return [header, ...rows]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+  }
+
+  function downloadFile(content, mimeType, filename) {
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = filename
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  function exportCompare(format) {
+    if (!compareResults.length) {
+      setError('Nao ha comparacao para exportar')
+      return
+    }
+
+    if (format === 'json') {
+      downloadFile(
+        JSON.stringify(compareResults, null, 2),
+        'application/json;charset=utf-8',
+        'comparacao-rotas.json'
+      )
+      return
+    }
+
+    const csv = serializeCompareToCsv(compareResults)
+    downloadFile(csv, 'text/csv;charset=utf-8', 'comparacao-rotas.csv')
+  }
+
   return (
     <div className="app-shell">
       <header className="hero">
@@ -262,25 +359,39 @@ function App() {
             <strong>{routeResult.cost} km</strong>
           </p>
           <p className="path">{routeResult.path?.join(' -> ') || 'Sem caminho'}</p>
+
+          <div className="metrics-grid">
+            <div className="metric-item">
+              <span>Tempo</span>
+              <strong>{routeResult.metrics?.execution_ms ?? '-'} ms</strong>
+            </div>
+            <div className="metric-item">
+              <span>Nos expandidos</span>
+              <strong>{routeResult.metrics?.expanded_nodes ?? '-'}</strong>
+            </div>
+            <div className="metric-item">
+              <span>Nos no caminho</span>
+              <strong>{routeResult.metrics?.path_nodes ?? '-'}</strong>
+            </div>
+          </div>
+
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>No</th>
-                  <th>g(n)</th>
-                  <th>h(n)</th>
-                  <th>f(n)</th>
+                  {getIterationColumns(routeResult.algorithm).map((column) => (
+                    <th key={column.key}>{column.label}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {routeResult.iterations.map((it, idx) => (
                   <tr key={`${it.node}-${idx}`}>
                     <td>{idx + 1}</td>
-                    <td>{it.node}</td>
-                    <td>{it.g ?? '-'}</td>
-                    <td>{it.h ?? '-'}</td>
-                    <td>{it.f ?? '-'}</td>
+                    {getIterationColumns(routeResult.algorithm).map((column) => (
+                      <td key={`${column.key}-${idx}`}>{getIterationValue(it, column.key)}</td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
@@ -308,6 +419,14 @@ function App() {
       {compareResults.length > 0 && (
         <section className="panel">
           <h2>Comparacao de Algoritmos</h2>
+          <div className="toolbar">
+            <button type="button" onClick={() => exportCompare('json')}>
+              Exportar JSON
+            </button>
+            <button type="button" onClick={() => exportCompare('csv')}>
+              Exportar CSV
+            </button>
+          </div>
           <div className="cards">
             {compareResults.map((result) => (
               <article key={result.algorithm} className="result-card">
@@ -316,6 +435,8 @@ function App() {
                   Distancia: <strong>{result.cost} km</strong>
                 </p>
                 <p>Iteracoes: {result.iterations.length}</p>
+                <p>Tempo: {result.metrics?.execution_ms ?? '-'} ms</p>
+                <p>Nos expandidos: {result.metrics?.expanded_nodes ?? '-'}</p>
                 <p className="path-small">{result.path?.join(' -> ') || 'Sem caminho'}</p>
               </article>
             ))}

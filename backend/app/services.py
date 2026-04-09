@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import importlib
+from time import perf_counter
 from pathlib import Path
 
 
@@ -37,7 +38,11 @@ greedy_search = search.greedy_search
 uniform_cost_search = search.uniform_cost_search
 
 
-PLATE_PATTERN = re.compile(r"^[A-Z0-9]{2}-[A-Z0-9]{2}-[A-Z0-9]{2}$")
+PLATE_PATTERNS = (
+    re.compile(r"^[A-Z]{2}\d{2}[A-Z]{2}$"),
+    re.compile(r"^\d{2}[A-Z]{2}\d{2}$"),
+    re.compile(r"^\d{4}[A-Z]{2}$"),
+)
 
 
 def get_cities() -> list[str]:
@@ -48,9 +53,11 @@ def normalize_plate(plate: str) -> str:
     clean = re.sub(r"[-\s]", "", plate).upper()
     if len(clean) != 6:
         raise ValueError("Matrícula inválida. Usa formato tipo AA-00-BB")
-    normalized = f"{clean[0:2]}-{clean[2:4]}-{clean[4:6]}"
-    if not PLATE_PATTERN.match(normalized):
+
+    if not any(pattern.match(clean) for pattern in PLATE_PATTERNS):
         raise ValueError("Matrícula inválida. Usa formato tipo AA-00-BB")
+
+    normalized = f"{clean[0:2]}-{clean[2:4]}-{clean[4:6]}"
     return normalized
 
 
@@ -61,6 +68,8 @@ def run_route(start: str, goal: str, algorithm: str, depth_limit: int | None = N
         raise ValueError("Origem e destino não podem ser iguais")
 
     heuristic = get_heuristic(goal)
+
+    started = perf_counter()
 
     if algorithm == "ucs":
         path, cost, iterations = uniform_cost_search(GRAPH, start, goal)
@@ -75,11 +84,19 @@ def run_route(start: str, goal: str, algorithm: str, depth_limit: int | None = N
     else:
         raise ValueError("Algoritmo inválido. Usa ucs|dls|greedy|astar")
 
+    elapsed_ms = round((perf_counter() - started) * 1000, 3)
+
     return {
         "algorithm": algorithm,
         "path": path,
         "cost": cost,
         "iterations": iterations,
+        "metrics": {
+            "execution_ms": elapsed_ms,
+            "expanded_nodes": len(iterations),
+            "path_nodes": len(path) if path else 0,
+            "found": bool(path),
+        },
     }
 
 

@@ -1,16 +1,47 @@
-# React + Vite
+# LEI-IA Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Web interface for the IA practical project.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Login with Portuguese plate validation (manual or OCR upload)
+- Route execution with four algorithms: UCS, DLS, Greedy, A*
+- Iteration table adapted to each algorithm
+- Route metrics (execution time, expanded nodes, path nodes)
+- Side-by-side comparison of all algorithms
+- Export comparison results to JSON and CSV
+- LLM attractions per city in the selected route
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 18+
+- Backend API running on `http://localhost:8000`
 
-## Expanding the ESLint configuration
+## Run
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+From the project root:
+
+```bash
+cd frontend
+npm.cmd install
+npm.cmd run dev
+```
+
+Open `http://localhost:5173`.
+
+## Build
+
+```bash
+npm.cmd run build
+npm.cmd run preview
+```
+
+## API Base URL
+
+Default API URL is `http://localhost:8000`.
+
+To override, define in `.env`:
+
+```bash
+VITE_API_BASE=http://localhost:8000
+```

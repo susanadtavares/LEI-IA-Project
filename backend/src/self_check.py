@@ -3,7 +3,7 @@ self_check.py
 Validação automática do projeto (grafo, heurística e algoritmos de procura).
 """
 
-from graph import GRAPH, CITIES, HEURISTIC_FARO, get_heuristic
+from graph import GRAPH, CITIES, get_heuristic
 from search import uniform_cost_search, a_star_search, greedy_search, path_cost
 
 
@@ -23,7 +23,7 @@ def validate_graph_symmetry(graph: dict) -> list[str]:
     return issues
 
 
-def check_heuristic_admissible(goal: str = "Faro") -> list[str]:
+def check_heuristic_admissible(goal: str) -> list[str]:
     issues = []
     heuristic = get_heuristic(goal)
 
@@ -52,7 +52,7 @@ def check_heuristic_consistent(goal: str = "Faro") -> list[str]:
     return issues
 
 
-def compare_algorithms(goal: str = "Faro") -> dict:
+def compare_algorithms_all_pairs() -> dict:
     report = {
         "total_cases": 0,
         "astar_matches_ucs": 0,
@@ -60,35 +60,35 @@ def compare_algorithms(goal: str = "Faro") -> dict:
         "mismatches": [],
     }
 
-    heuristic = get_heuristic(goal)
+    for goal in CITIES:
+        heuristic = get_heuristic(goal)
+        for city in CITIES:
+            if city == goal:
+                continue
 
-    for city in CITIES:
-        if city == goal:
-            continue
+            report["total_cases"] += 1
 
-        report["total_cases"] += 1
+            u_path, u_cost, _ = uniform_cost_search(GRAPH, city, goal)
+            a_path, a_cost, _ = a_star_search(GRAPH, city, goal, heuristic)
+            g_path, g_cost, _ = greedy_search(GRAPH, city, goal, heuristic)
 
-        u_path, u_cost, _ = uniform_cost_search(GRAPH, city, goal)
-        a_path, a_cost, _ = a_star_search(GRAPH, city, goal, heuristic)
-        g_path, g_cost, _ = greedy_search(GRAPH, city, goal, heuristic)
+            if abs(a_cost - u_cost) < 1e-9:
+                report["astar_matches_ucs"] += 1
+            else:
+                report["mismatches"].append(
+                    f"A* != UCS para {city}->{goal}: A*={a_cost}, UCS={u_cost}"
+                )
 
-        if a_cost == u_cost:
-            report["astar_matches_ucs"] += 1
-        else:
-            report["mismatches"].append(
-                f"A* != UCS para {city}->{goal}: A*={a_cost}, UCS={u_cost}"
-            )
+            if abs(g_cost - u_cost) < 1e-9:
+                report["greedy_matches_ucs"] += 1
 
-        if g_cost == u_cost:
-            report["greedy_matches_ucs"] += 1
-
-        # Verificacao adicional de integridade dos caminhos devolvidos.
-        if u_path and path_cost(GRAPH, u_path) != u_cost:
-            report["mismatches"].append(f"UCS caminho invalido em {city}->{goal}")
-        if a_path and path_cost(GRAPH, a_path) != a_cost:
-            report["mismatches"].append(f"A* caminho invalido em {city}->{goal}")
-        if g_path and path_cost(GRAPH, g_path) != g_cost:
-            report["mismatches"].append(f"Greedy caminho invalido em {city}->{goal}")
+            # Verificacao adicional de integridade dos caminhos devolvidos.
+            if u_path and abs(path_cost(GRAPH, u_path) - u_cost) >= 1e-9:
+                report["mismatches"].append(f"UCS caminho invalido em {city}->{goal}")
+            if a_path and abs(path_cost(GRAPH, a_path) - a_cost) >= 1e-9:
+                report["mismatches"].append(f"A* caminho invalido em {city}->{goal}")
+            if g_path and abs(path_cost(GRAPH, g_path) - g_cost) >= 1e-9:
+                report["mismatches"].append(f"Greedy caminho invalido em {city}->{goal}")
 
     return report
 
@@ -97,9 +97,16 @@ def main():
     print("=== SELF CHECK: IA Final Project ===")
 
     graph_issues = validate_graph_symmetry(GRAPH)
-    adm_issues = check_heuristic_admissible("Faro")
-    con_issues = check_heuristic_consistent("Faro")
-    algo_report = compare_algorithms("Faro")
+    adm_issues = []
+    con_issues = []
+
+    for goal in CITIES:
+        goal_adm = check_heuristic_admissible(goal)
+        goal_con = check_heuristic_consistent(goal)
+        adm_issues.extend(goal_adm)
+        con_issues.extend(goal_con)
+
+    algo_report = compare_algorithms_all_pairs()
 
     print(f"\n[1] Grafo - problemas: {len(graph_issues)}")
     for issue in graph_issues[:10]:
@@ -113,7 +120,7 @@ def main():
     for issue in con_issues[:10]:
         print(" -", issue)
 
-    print("\n[4] Comparacao de algoritmos (origem -> Faro)")
+    print("\n[4] Comparacao de algoritmos (todos os pares origem/destino)")
     print(f" - Casos avaliados: {algo_report['total_cases']}")
     print(f" - A* igual ao UCS: {algo_report['astar_matches_ucs']}")
     print(f" - Greedy igual ao UCS: {algo_report['greedy_matches_ucs']}")

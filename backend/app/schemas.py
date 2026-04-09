@@ -13,6 +13,7 @@ class RouteResponse(BaseModel):
     path: list[str] | None
     cost: float
     iterations: list[dict]
+    metrics: dict
 
 
 class CompareRequest(BaseModel):

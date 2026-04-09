@@ -167,7 +167,7 @@ def choose_algorithm() -> str:
     1. Custo Uniforme
     2. Profundidade Limitada
 
-  Procura Heurística (heurística otimizada para destino = Faro):
+    Procura Heurística (com estimativa em linha reta para qualquer destino):
     3. Sôfrega (Greedy Best-First)
     4. A*
 
@@ -268,10 +268,8 @@ def main():
         start = choose_city("Cidade de ORIGEM:")
         goal  = choose_city("Cidade de DESTINO:", exclude=start)
 
-        if goal != "Faro":
-            print("\n  ⚠  Nota: a heurística fornecida é optimizada para destino = Faro.")
-            print("     Para outros destinos, os algoritmos A* e Sôfrega comportam-se")
-            print("     de forma não-informada (h=0).")
+        print("\n  Nota: A* e Sôfrega usam heurística de distancia em linha reta")
+        print("  para orientar a procura em qualquer destino.")
 
         # 5. Escolha de algoritmo
         algo_choice = choose_algorithm()
