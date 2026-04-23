@@ -56,6 +56,19 @@ npm.cmd install
 npm.cmd run dev
 ```
 
+
+### 2. LLM Ollama
+
+Instalar: https://ollama.com/download
+
+### Depois no PowerShell: 
+
+- ollama serve 
+
+## Abrir outro Terminal
+
+- ollama run llama3.2
+
 Frontend URL: `http://localhost:5173`
 
 ## Running the CLI Version
