@@ -108,6 +108,8 @@ CITY_COORDS = {
 CITIES = sorted(GRAPH.keys())
 
 
+#Haversine é uma fórmula matemática usada para calcular a distância em linha reta entre dois pontos 
+# na superfície da Terra a partir das suas coordenadas geográficas (latitude e longitude).
 def _haversine_km(city_a: str, city_b: str) -> float:
     """
     Distancia geodesica aproximada entre duas cidades (km) usando Haversine.
