@@ -12,24 +12,24 @@ import './App.css'
 
 const ITERATION_COLUMN_MAP = {
   ucs: [
-    { key: 'node', label: 'No' },
+    { key: 'node', label: 'Nó' },
     { key: 'g', label: 'g(n)' },
     { key: 'path', label: 'Caminho' },
   ],
   dls: [
-    { key: 'node', label: 'No' },
+    { key: 'node', label: 'Nó' },
     { key: 'depth', label: 'Prof' },
     { key: 'g', label: 'g(n)' },
     { key: 'path', label: 'Caminho' },
   ],
   greedy: [
-    { key: 'node', label: 'No' },
+    { key: 'node', label: 'Nó' },
     { key: 'h', label: 'h(n)' },
     { key: 'g', label: 'g(n)' },
     { key: 'path', label: 'Caminho' },
   ],
   astar: [
-    { key: 'node', label: 'No' },
+    { key: 'node', label: 'Nó' },
     { key: 'f', label: 'f(n)' },
     { key: 'g', label: 'g(n)' },
     { key: 'h', label: 'h(n)' },
@@ -185,7 +185,7 @@ function App() {
     const map = {
       ucs: 'Custo Uniforme',
       dls: 'Profundidade Limitada',
-      greedy: 'Sofrega',
+      greedy: 'Sôfrega',
       astar: 'A*',
     }
     return map[value] ?? value
@@ -244,7 +244,7 @@ function App() {
 
   function exportCompare(format) {
     if (!compareResults.length) {
-      setError('Nao ha comparacao para exportar')
+      setError('Não há comparação para exportar')
       return
     }
 
@@ -267,7 +267,7 @@ function App() {
         <p className="kicker">LEI IA 2026</p>
         <h1>Navegador Inteligente de Cidades</h1>
         <p className="lead">
-          Planeia rotas entre cidades portuguesas com algoritmos de procura, OCR de matriculas e
+          Planeia rotas entre cidades portuguesas com algoritmos de procura, OCR de matrículas e
           apoio de LLM local.
         </p>
       </header>
@@ -276,7 +276,7 @@ function App() {
 
       <section className="grid-two">
         <article className="panel">
-          <h2>1) Login por Matricula</h2>
+          <h2>1) Login por Matrícula</h2>
           <p className="muted">Valida manualmente ou reconhece com OCR.</p>
           <form onSubmit={handlePlateManual} className="form-row">
             <input
@@ -294,11 +294,11 @@ function App() {
               Ler OCR
             </button>
           </form>
-          <p className="plate-value">Veiculo: <strong>{plate || 'nao autenticado'}</strong></p>
+          <p className="plate-value">Veículo: <strong>{plate || 'não autenticado'}</strong></p>
         </article>
 
         <article className="panel">
-          <h2>2) Configuracao da Rota</h2>
+          <h2>2) Configuração da Rota</h2>
           <p className="muted">Escolhe origem, destino e algoritmo.</p>
           <form className="route-form" onSubmit={handleRunRoute}>
             <label>
@@ -326,7 +326,7 @@ function App() {
               <select value={algorithm} onChange={(e) => setAlgorithm(e.target.value)}>
                 <option value="ucs">Custo Uniforme</option>
                 <option value="dls">Profundidade Limitada</option>
-                <option value="greedy">Sofrega</option>
+                <option value="greedy">Sôfrega</option>
                 <option value="astar">A*</option>
               </select>
             </label>
@@ -355,7 +355,7 @@ function App() {
         <section className="panel">
           <h2>Resultado de Rota</h2>
           <p>
-            <strong>{labelAlgorithm(routeResult.algorithm)}</strong> | Distancia total:{' '}
+            <strong>{labelAlgorithm(routeResult.algorithm)}</strong> | Distância total:{' '}
             <strong>{routeResult.cost} km</strong>
           </p>
           <p className="path">{routeResult.path?.join(' -> ') || 'Sem caminho'}</p>
@@ -366,11 +366,11 @@ function App() {
               <strong>{routeResult.metrics?.execution_ms ?? '-'} ms</strong>
             </div>
             <div className="metric-item">
-              <span>Nos expandidos</span>
+              <span>Nós expandidos</span>
               <strong>{routeResult.metrics?.expanded_nodes ?? '-'}</strong>
             </div>
             <div className="metric-item">
-              <span>Nos no caminho</span>
+              <span>Nós no caminho</span>
               <strong>{routeResult.metrics?.path_nodes ?? '-'}</strong>
             </div>
           </div>
@@ -410,7 +410,7 @@ function App() {
               </select>
             </label>
             <button onClick={handleAttractions} disabled={loading}>
-              Gerar Atractoes da Rota
+              Gerar Atrações da Rota
             </button>
           </div>
         </section>
@@ -418,7 +418,7 @@ function App() {
 
       {compareResults.length > 0 && (
         <section className="panel">
-          <h2>Comparacao de Algoritmos</h2>
+          <h2>Comparação de Algoritmos</h2>
           <div className="toolbar">
             <button type="button" onClick={() => exportCompare('json')}>
               Exportar JSON
@@ -432,11 +432,11 @@ function App() {
               <article key={result.algorithm} className="result-card">
                 <h3>{labelAlgorithm(result.algorithm)}</h3>
                 <p>
-                  Distancia: <strong>{result.cost} km</strong>
+                  Distância: <strong>{result.cost} km</strong>
                 </p>
-                <p>Iteracoes: {result.iterations.length}</p>
+                <p>Iterações: {result.iterations.length}</p>
                 <p>Tempo: {result.metrics?.execution_ms ?? '-'} ms</p>
-                <p>Nos expandidos: {result.metrics?.expanded_nodes ?? '-'}</p>
+                <p>Nós expandidos: {result.metrics?.expanded_nodes ?? '-'}</p>
                 <p className="path-small">{result.path?.join(' -> ') || 'Sem caminho'}</p>
               </article>
             ))}
@@ -446,7 +446,7 @@ function App() {
 
       {attractions.length > 0 && (
         <section className="panel">
-          <h2>Atractoes Turisticas</h2>
+          <h2>Atrações Turísticas</h2>
           <div className="cards">
             {attractions.map((item) => (
               <article key={item.city} className="result-card">
